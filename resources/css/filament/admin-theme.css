@@ -1,0 +1,1095 @@
+/* ==========================================================================
+   TOKO SILATURIZKY — LUXURY BOTANICAL ADMIN THEME
+   Visual Direction: Grand, Sophisticated, Polished, Cohesive, Modern Enterprise
+   Color System:
+     - Primary sage:        #A1CCA6
+     - Deep forest green:   #355B3E
+     - Dark green:          #263D2C
+     - Soft sage:           #E5EFE3
+     - Background:          #F4F7F1
+     - Pure white:          #FFFFFF
+     - Muted text:          #78847A
+     - Border:              #DCE6DA
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. CSS Variables & Theme Design Tokens
+   -------------------------------------------------------------------------- */
+:root {
+    --sage-primary: #A1CCA6;
+    --sage-forest: #355B3E;
+    --sage-dark: #263D2C;
+    --sage-soft: #E5EFE3;
+    --sage-bg: #F4F7F1;
+    --sage-card: #FFFFFF;
+    --sage-muted: #78847A;
+    --sage-border: #DCE6DA;
+    --sage-border-subtle: #EDF3EB;
+    --sage-ring: rgba(161, 204, 166, 0.42);
+
+    --sage-amber-bg: #FEF7EE;
+    --sage-amber-text: #8A5314;
+    --sage-amber-border: #F5E0C2;
+
+    --sage-rose-bg: #FDF2F2;
+    --sage-rose-text: #9A2C2C;
+    --sage-rose-border: #F8D3D3;
+
+    --sage-shadow-xs: 0 1px 2px rgba(38, 61, 44, 0.03);
+    --sage-shadow-sm: 0 2px 6px -1px rgba(38, 61, 44, 0.04), 0 1px 3px rgba(38, 61, 44, 0.02);
+    --sage-shadow-md: 0 6px 18px -3px rgba(38, 61, 44, 0.06), 0 2px 6px -1px rgba(38, 61, 44, 0.03);
+    --sage-shadow-lg: 0 14px 34px -4px rgba(38, 61, 44, 0.09), 0 4px 12px -2px rgba(38, 61, 44, 0.04);
+    --sage-shadow-xl: 0 22px 50px -8px rgba(38, 61, 44, 0.14);
+
+    --sage-radius-xs: 6px;
+    --sage-radius-sm: 8px;
+    --sage-radius-md: 10px;
+    --sage-radius-lg: 14px;
+    --sage-radius-xl: 18px;
+    --sage-radius-full: 9999px;
+
+    --sage-font: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Base Body, Typography & Motion
+   -------------------------------------------------------------------------- */
+body,
+.fi-body {
+    background-color: var(--sage-bg) !important;
+    color: var(--sage-dark) !important;
+    font-family: var(--sage-font) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Page Entrance (Clean opacity without persistent transform) */
+@keyframes sagePageIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.fi-page-content {
+    animation: sagePageIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* --------------------------------------------------------------------------
+   3. Topbar / Header (Safe for Floating UI & Profile Dropdown)
+   -------------------------------------------------------------------------- */
+.fi-topbar {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid var(--sage-border) !important;
+    box-shadow: 0 1px 3px rgba(38, 61, 44, 0.03) !important;
+    /* Explicitly avoid backdrop-filter or transform to preserve Floating UI coordinate space */
+}
+
+.fi-topbar nav {
+    background: transparent !important;
+}
+
+.fi-topbar-item-btn {
+    border-radius: var(--sage-radius-sm) !important;
+    color: var(--sage-forest) !important;
+    transition: background-color 0.18s ease, color 0.18s ease !important;
+}
+
+.fi-topbar-item-btn:hover {
+    background-color: var(--sage-bg) !important;
+    color: var(--sage-dark) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Sidebar & Navigation (Section 3C: Premium Sidebar)
+   -------------------------------------------------------------------------- */
+.fi-sidebar {
+    background-color: #FFFFFF !important;
+    border-right: 1px solid var(--sage-border) !important;
+    box-shadow: 2px 0 14px rgba(38, 61, 44, 0.02) !important;
+    width: 16.5rem !important;
+}
+
+.fi-sidebar-header {
+    height: 4rem !important;
+    border-bottom: 1px solid var(--sage-border) !important;
+    padding: 0 1.35rem !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.fi-sidebar-header .fi-logo,
+.fi-sidebar-header a {
+    color: var(--sage-dark) !important;
+    font-weight: 800 !important;
+    font-size: 0.975rem !important;
+    letter-spacing: -0.02em !important;
+}
+
+.fi-sidebar-group {
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
+}
+
+.fi-sidebar-group-label {
+    color: var(--sage-muted) !important;
+    font-size: 0.6875rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 0.65rem 0.95rem 0.35rem !important;
+}
+
+.fi-sidebar-item {
+    margin: 2px 0 !important;
+    padding: 0 0.5rem !important;
+}
+
+.fi-sidebar-item a,
+.fi-sidebar-item button {
+    border-radius: var(--sage-radius-sm) !important;
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.845rem !important;
+    font-weight: 500 !important;
+    color: var(--sage-forest) !important;
+    transition: background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.fi-sidebar-item a:hover,
+.fi-sidebar-item button:hover {
+    background-color: var(--sage-bg) !important;
+    color: var(--sage-dark) !important;
+    transform: translateX(2px) !important;
+}
+
+/* Active Sidebar Item */
+.fi-sidebar-item-active a,
+.fi-sidebar-item-active button {
+    background-color: var(--sage-soft) !important;
+    color: var(--sage-dark) !important;
+    font-weight: 600 !important;
+    border-left: 3px solid var(--sage-forest) !important;
+    border-top-left-radius: 2px !important;
+    border-bottom-left-radius: 2px !important;
+}
+
+.fi-sidebar-item a .fi-sidebar-item-icon,
+.fi-sidebar-item button .fi-sidebar-item-icon {
+    color: var(--sage-muted) !important;
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    margin-right: 0.75rem !important;
+    transition: color 0.18s ease !important;
+}
+
+.fi-sidebar-item a:hover .fi-sidebar-item-icon,
+.fi-sidebar-item button:hover .fi-sidebar-item-icon {
+    color: var(--sage-forest) !important;
+}
+
+.fi-sidebar-item-active a .fi-sidebar-item-icon,
+.fi-sidebar-item-active button .fi-sidebar-item-icon {
+    color: var(--sage-forest) !important;
+}
+
+.fi-sidebar-item .fi-badge {
+    background-color: var(--sage-soft) !important;
+    color: var(--sage-dark) !important;
+    border: 1px solid var(--sage-border) !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. Page Header & Breadcrumbs (Section 3D: Typography)
+   -------------------------------------------------------------------------- */
+.fi-header {
+    margin-bottom: 1.5rem !important;
+}
+
+.fi-header-heading {
+    color: var(--sage-dark) !important;
+    font-size: 1.65rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.025em !important;
+    line-height: 1.25 !important;
+}
+
+.fi-header-subheading {
+    color: var(--sage-muted) !important;
+    font-size: 0.85rem !important;
+    margin-top: 0.35rem !important;
+    line-height: 1.5 !important;
+}
+
+.fi-breadcrumbs {
+    font-size: 0.785rem !important;
+    margin-bottom: 0.65rem !important;
+}
+
+.fi-breadcrumbs-item a {
+    color: var(--sage-muted) !important;
+    transition: color 0.15s ease !important;
+}
+
+.fi-breadcrumbs-item a:hover {
+    color: var(--sage-dark) !important;
+}
+
+.fi-breadcrumbs-item:last-child {
+    color: var(--sage-dark) !important;
+    font-weight: 600 !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. PROFIL ADMIN & DROPDOWN (Section 6: Robust & Unbroken)
+   -------------------------------------------------------------------------- */
+.fi-user-menu {
+    position: relative !important;
+}
+
+.fi-user-menu button {
+    border-radius: 9999px !important;
+    transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.fi-user-menu button:hover {
+    box-shadow: 0 0 0 3px var(--sage-ring) !important;
+}
+
+.fi-dropdown-panel {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--sage-border) !important;
+    border-radius: var(--sage-radius-lg) !important;
+    box-shadow: var(--sage-shadow-lg) !important;
+    padding: 0.4rem !important;
+    z-index: 60 !important;
+}
+
+.fi-dropdown-header {
+    padding: 0.65rem 0.85rem !important;
+    border-bottom: 1px solid var(--sage-border) !important;
+    margin-bottom: 0.3rem !important;
+    font-weight: 600 !important;
+    color: var(--sage-dark) !important;
+}
+
+.fi-dropdown-list-item-btn,
+.fi-dropdown-list-item-btn[role="menuitem"] {
+    border-radius: var(--sage-radius-sm) !important;
+    font-size: 0.835rem !important;
+    font-weight: 500 !important;
+    color: var(--sage-dark) !important;
+    padding: 0.5rem 0.85rem !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.fi-dropdown-list-item-btn:hover {
+    background-color: var(--sage-soft) !important;
+    color: var(--sage-forest) !important;
+}
+
+.fi-dropdown-list-item-btn:active {
+    background-color: var(--sage-soft) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. BOTANICAL DASHBOARD WIDGET (Sections 3A & 3B)
+   -------------------------------------------------------------------------- */
+.sr-botanical-dashboard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+/* --- 3A. Hero Banner --- */
+.sr-hero-banner {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #FFFFFF 0%, #FAFCF9 55%, #F0F6EE 100%);
+    border: 1px solid var(--sage-border);
+    border-radius: var(--sage-radius-xl);
+    padding: 28px 32px;
+    box-shadow: var(--sage-shadow-md);
+    margin-bottom: 22px;
+    animation: sagePageIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.sr-hero-botanical-watermark {
+    position: absolute;
+    right: -25px;
+    bottom: -35px;
+    color: var(--sage-forest);
+    opacity: 0.045;
+    pointer-events: none;
+    user-select: none;
+}
+
+.sr-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.sr-hero-main {
+    flex: 1;
+    max-width: 780px;
+}
+
+.sr-brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--sage-soft);
+    color: var(--sage-dark);
+    border: 1px solid var(--sage-border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: var(--sage-radius-full);
+    margin-bottom: 12px;
+}
+
+.sr-brand-pill-icon {
+    display: inline-flex;
+    color: var(--sage-forest);
+}
+
+.sr-hero-title {
+    margin: 0 0 8px 0;
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+    font-weight: 800;
+    color: var(--sage-dark);
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+}
+
+.sr-hero-subtitle {
+    margin: 0;
+    font-size: 0.885rem;
+    color: var(--sage-muted);
+    line-height: 1.6;
+}
+
+.sr-hero-subtitle strong {
+    color: var(--sage-dark);
+    font-weight: 600;
+}
+
+.sr-hero-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.sr-meta-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1px solid var(--sage-border);
+    border-radius: var(--sage-radius-md);
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--sage-dark);
+    box-shadow: var(--sage-shadow-xs);
+}
+
+.sr-meta-date-icon {
+    display: inline-flex;
+    color: var(--sage-forest);
+}
+
+.sr-meta-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--sage-soft);
+    border: 1px solid #CCE1CE;
+    border-radius: var(--sage-radius-full);
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--sage-forest);
+}
+
+.sr-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: var(--sage-radius-full);
+    background-color: var(--sage-forest);
+    box-shadow: 0 0 0 0 rgba(53, 91, 62, 0.45);
+    animation: srPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes srPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(53, 91, 62, 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(53, 91, 62, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(53, 91, 62, 0);
+    }
+}
+
+/* --- 3B. Stat Cards (Tier 1 & Tier 2) --- */
+.sr-stats-tier-primary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.sr-stats-tier-secondary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.sr-card {
+    position: relative;
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid var(--sage-border);
+    border-radius: var(--sage-radius-lg);
+    box-shadow: var(--sage-shadow-xs);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.22s ease;
+}
+
+.sr-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--sage-primary);
+    box-shadow: var(--sage-shadow-lg);
+}
+
+/* Primary Executive Card */
+.sr-card-primary {
+    padding: 22px 24px;
+    min-height: 148px;
+}
+
+.sr-card-top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--sage-primary) 0%, var(--sage-forest) 100%);
+}
+
+/* Secondary Operational Card */
+.sr-card-secondary {
+    padding: 18px 20px;
+    min-height: 130px;
+}
+
+.sr-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.sr-card-label-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sr-card-tag {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sage-forest);
+    background: var(--sage-soft);
+    border: 1px solid #CCE1CE;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+.sr-card-tag-sm {
+    font-size: 9.5px;
+}
+
+.sr-tag-danger {
+    color: var(--sage-rose-text) !important;
+    background: var(--sage-rose-bg) !important;
+    border-color: var(--sage-rose-border) !important;
+}
+
+.sr-card-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--sage-muted);
+    letter-spacing: -0.01em;
+}
+
+.sr-card-title-sm {
+    font-size: 0.775rem;
+}
+
+/* Card Icon Containers */
+.sr-card-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--sage-radius-md);
+    flex-shrink: 0;
+}
+
+.sr-card-icon-primary {
+    width: 42px;
+    height: 42px;
+    background: var(--sage-soft);
+    color: var(--sage-forest);
+    border: 1px solid #CCE1CE;
+}
+
+.sr-icon-info {
+    width: 36px;
+    height: 36px;
+    background: var(--sage-soft);
+    color: var(--sage-forest);
+    border: 1px solid var(--sage-border);
+}
+
+.sr-icon-warning {
+    width: 36px;
+    height: 36px;
+    background: var(--sage-amber-bg);
+    color: var(--sage-amber-text);
+    border: 1px solid var(--sage-amber-border);
+}
+
+.sr-icon-danger {
+    width: 36px;
+    height: 36px;
+    background: var(--sage-rose-bg);
+    color: var(--sage-rose-text);
+    border: 1px solid var(--sage-rose-border);
+}
+
+.sr-icon-success {
+    width: 36px;
+    height: 36px;
+    background: var(--sage-soft);
+    color: var(--sage-forest);
+    border: 1px solid #CCE1CE;
+}
+
+/* Card Values */
+.sr-card-body {
+    margin: 12px 0 6px;
+}
+
+.sr-card-value {
+    color: var(--sage-dark);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.sr-card-value-lg {
+    font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+}
+
+.sr-card-value-md {
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+
+.sr-card-value-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Card Footer */
+.sr-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.sr-card-desc-icon {
+    display: inline-flex;
+    color: var(--sage-forest);
+    flex-shrink: 0;
+}
+
+.sr-card-description {
+    font-size: 0.775rem;
+    color: var(--sage-muted);
+    line-height: 1.45;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 960px) {
+    .sr-hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sr-hero-meta {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .sr-stats-tier-secondary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .sr-hero-banner {
+        padding: 20px;
+    }
+
+    .sr-stats-tier-primary,
+    .sr-stats-tier-secondary {
+        grid-template-columns: 1fr;
+    }
+
+    .sr-card-primary,
+    .sr-card-secondary {
+        padding: 16px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   8. TABLES (Section 3E: Refined, Compact, Easy to Read)
+   -------------------------------------------------------------------------- */
+.fi-ta-ctn {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--sage-border) !important;
+    border-radius: var(--sage-radius-lg) !important;
+    box-shadow: var(--sage-shadow-sm) !important;
+    overflow: hidden !important;
+}
+
+.fi-ta-header {
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid var(--sage-border) !important;
+    padding: 0.95rem 1.35rem !important;
+}
+
+.fi-ta-header-heading {
+    color: var(--sage-dark) !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em !important;
+}
+
+.fi-ta-header-description {
+    color: var(--sage-muted) !important;
+    font-size: 0.8125rem !important;
+}
+
+/* Table Header Cells */
+.fi-ta-header-cell {
+    background-color: var(--sage-bg) !important;
+    color: var(--sage-forest) !important;
+    font-size: 0.715rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid var(--sage-border) !important;
+}
+
+/* Table Rows & Cells */
+.fi-ta-row {
+    border-bottom: 1px solid var(--sage-border-subtle) !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.fi-ta-row:hover {
+    background-color: #F8FAF7 !important;
+}
+
+.fi-ta-cell {
+    padding: 0.7rem 1rem !important;
+    font-size: 0.835rem !important;
+    color: var(--sage-dark) !important;
+    vertical-align: middle !important;
+}
+
+/* Table Empty State */
+.fi-ta-empty-state {
+    padding: 3rem 1.5rem !important;
+}
+
+.fi-ta-empty-state-heading {
+    color: var(--sage-dark) !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+.fi-ta-empty-state-description {
+    color: var(--sage-muted) !important;
+    font-size: 0.825rem !important;
+}
+
+/* Table Pagination */
+.fi-ta-pagination {
+    border-top: 1px solid var(--sage-border) !important;
+    background-color: #FFFFFF !important;
+    padding: 0.75rem 1.35rem !important;
+    font-size: 0.8125rem !important;
+}
+
+.fi-ta-pagination-records-per-page-select {
+    border-radius: var(--sage-radius-sm) !important;
+    border-color: var(--sage-border) !important;
+    font-size: 0.8rem !important;
+    padding: 0.35rem 0.65rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. FORM FIELDS, INPUTS & CONTROLS (Section 3E: Refined Forms)
+   -------------------------------------------------------------------------- */
+.fi-section {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--sage-border) !important;
+    border-radius: var(--sage-radius-lg) !important;
+    box-shadow: var(--sage-shadow-sm) !important;
+    overflow: hidden !important;
+    margin-bottom: 1.35rem !important;
+}
+
+.fi-section-header {
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid var(--sage-border) !important;
+    padding: 1rem 1.35rem !important;
+}
+
+.fi-section-header-heading {
+    font-size: 0.975rem !important;
+    font-weight: 700 !important;
+    color: var(--sage-dark) !important;
+    letter-spacing: -0.015em !important;
+}
+
+.fi-section-header-description {
+    font-size: 0.785rem !important;
+    color: var(--sage-muted) !important;
+    margin-top: 0.25rem !important;
+}
+
+.fi-section-content {
+    padding: 1.35rem !important;
+}
+
+.fi-fo-field-wrp {
+    margin-bottom: 0.85rem !important;
+}
+
+.fi-fo-field-wrp-label {
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    color: var(--sage-dark) !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.fi-input-wrp {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--sage-border) !important;
+    border-radius: var(--sage-radius-sm) !important;
+    min-height: 2.35rem !important;
+    box-shadow: var(--sage-shadow-xs) !important;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.fi-input-wrp:focus-within {
+    border-color: var(--sage-forest) !important;
+    box-shadow: 0 0 0 3px var(--sage-ring) !important;
+}
+
+.fi-input,
+.fi-select-input,
+textarea.fi-input {
+    font-size: 0.845rem !important;
+    color: var(--sage-dark) !important;
+    padding: 0.45rem 0.85rem !important;
+    font-family: inherit !important;
+}
+
+.fi-input::placeholder,
+.fi-select-input::placeholder {
+    color: #9BA69E !important;
+    font-size: 0.8125rem !important;
+}
+
+.fi-fo-field-wrp-helper-text {
+    font-size: 0.75rem !important;
+    color: var(--sage-muted) !important;
+    margin-top: 0.25rem !important;
+}
+
+/* Checkboxes & Radios */
+.fi-checkbox-input,
+input[type="checkbox"].fi-checkbox {
+    border-color: #CFD7CF !important;
+    border-radius: 5px !important;
+    color: var(--sage-forest) !important;
+    transition: all 0.15s ease !important;
+}
+
+.fi-checkbox-input:checked,
+input[type="checkbox"]:checked {
+    background-color: var(--sage-forest) !important;
+    border-color: var(--sage-forest) !important;
+}
+
+.fi-checkbox-input:focus,
+input[type="checkbox"]:focus {
+    box-shadow: 0 0 0 3px var(--sage-ring) !important;
+}
+
+/* --------------------------------------------------------------------------
+   10. BUTTONS (Tactile, Clean, Elevated)
+   -------------------------------------------------------------------------- */
+.fi-btn {
+    border-radius: var(--sage-radius-sm) !important;
+    font-size: 0.825rem !important;
+    font-weight: 600 !important;
+    min-height: 2.25rem !important;
+    padding: 0.45rem 0.95rem !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.4rem !important;
+}
+
+/* Primary Button */
+.fi-btn-color-primary {
+    background-color: var(--sage-forest) !important;
+    color: #FFFFFF !important;
+    border: 1px solid var(--sage-forest) !important;
+    box-shadow: 0 2px 6px rgba(53, 91, 62, 0.22) !important;
+}
+
+.fi-btn-color-primary:hover {
+    background-color: var(--sage-dark) !important;
+    border-color: var(--sage-dark) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(38, 61, 44, 0.26) !important;
+}
+
+.fi-btn-color-primary:active {
+    transform: translateY(0) !important;
+}
+
+/* Gray / Secondary Button */
+.fi-btn-color-gray {
+    background-color: #FFFFFF !important;
+    color: var(--sage-dark) !important;
+    border: 1px solid var(--sage-border) !important;
+    box-shadow: var(--sage-shadow-xs) !important;
+}
+
+.fi-btn-color-gray:hover {
+    background-color: var(--sage-bg) !important;
+    border-color: var(--sage-primary) !important;
+    transform: translateY(-1px) !important;
+}
+
+.fi-btn-color-gray:active {
+    transform: translateY(0) !important;
+}
+
+/* Danger Button */
+.fi-btn-color-danger {
+    background-color: #C85A54 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #C85A54 !important;
+    box-shadow: 0 2px 6px rgba(200, 90, 84, 0.2) !important;
+}
+
+.fi-btn-color-danger:hover {
+    background-color: #B44A44 !important;
+    border-color: #B44A44 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* --------------------------------------------------------------------------
+   11. BADGES & STATUS INDICATORS (Soft, Harmonious Contrast)
+   -------------------------------------------------------------------------- */
+.fi-badge {
+    border-radius: var(--sage-radius-full) !important;
+    font-size: 0.715rem !important;
+    font-weight: 600 !important;
+    padding: 0.2rem 0.6rem !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* Success / Primary Badge */
+.fi-badge-color-success,
+.fi-badge-color-primary {
+    background-color: var(--sage-soft) !important;
+    color: var(--sage-dark) !important;
+    border: 1px solid #CCE1CE !important;
+}
+
+/* Warning Badge */
+.fi-badge-color-warning {
+    background-color: var(--sage-amber-bg) !important;
+    color: var(--sage-amber-text) !important;
+    border: 1px solid var(--sage-amber-border) !important;
+}
+
+/* Danger Badge */
+.fi-badge-color-danger {
+    background-color: var(--sage-rose-bg) !important;
+    color: var(--sage-rose-text) !important;
+    border: 1px solid var(--sage-rose-border) !important;
+}
+
+/* Info / Gray Badge */
+.fi-badge-color-info,
+.fi-badge-color-gray {
+    background-color: #EFF3EF !important;
+    color: #48524A !important;
+    border: 1px solid var(--sage-border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   12. MODALS & DIALOGS
+   -------------------------------------------------------------------------- */
+.fi-modal-window {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--sage-border) !important;
+    border-radius: var(--sage-radius-xl) !important;
+    box-shadow: var(--sage-shadow-xl) !important;
+    overflow: hidden !important;
+}
+
+.fi-modal-header {
+    border-bottom: 1px solid var(--sage-border) !important;
+    padding: 1.25rem 1.5rem !important;
+    background-color: #FFFFFF !important;
+}
+
+.fi-modal-heading {
+    color: var(--sage-dark) !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em !important;
+}
+
+.fi-modal-description {
+    color: var(--sage-muted) !important;
+    font-size: 0.8125rem !important;
+}
+
+.fi-modal-footer {
+    border-top: 1px solid var(--sage-border) !important;
+    background-color: var(--sage-bg) !important;
+    padding: 0.95rem 1.5rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   13. NOTIFICATIONS / TOASTS
+   -------------------------------------------------------------------------- */
+.fi-no-notification {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--sage-border) !important;
+    border-radius: var(--sage-radius-md) !important;
+    box-shadow: var(--sage-shadow-lg) !important;
+    padding: 0.95rem 1.25rem !important;
+}
+
+.fi-no-notification-title {
+    color: var(--sage-dark) !important;
+    font-weight: 600 !important;
+    font-size: 0.865rem !important;
+}
+
+.fi-no-notification-body {
+    color: var(--sage-muted) !important;
+    font-size: 0.8125rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. TABS
+   -------------------------------------------------------------------------- */
+.fi-tabs {
+    border-bottom: 1px solid var(--sage-border) !important;
+    gap: 0.35rem !important;
+}
+
+.fi-tabs-item-btn {
+    color: var(--sage-muted) !important;
+    font-size: 0.835rem !important;
+    font-weight: 500 !important;
+    padding: 0.6rem 0.95rem !important;
+    transition: color 0.18s ease, border-color 0.18s ease !important;
+    border-bottom: 2px solid transparent !important;
+}
+
+.fi-tabs-item-btn:hover {
+    color: var(--sage-dark) !important;
+}
+
+.fi-tabs-item-btn[aria-selected="true"],
+.fi-tabs-item-active .fi-tabs-item-btn {
+    color: var(--sage-forest) !important;
+    font-weight: 600 !important;
+    border-bottom-color: var(--sage-forest) !important;
+}
+
+/* --------------------------------------------------------------------------
+   15. ACCESSIBILITY & REDUCED MOTION (Section 4)
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+
+    .sr-card:hover,
+    .sr-card-primary:hover,
+    .sr-card-secondary:hover,
+    .fi-btn:hover,
+    .fi-sidebar-item a:hover {
+        transform: none !important;
+    }
+}
