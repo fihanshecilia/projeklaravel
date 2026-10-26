@@ -615,11 +615,11 @@
         <aside class="sr-login-visual"
                aria-label="Informasi Toko Silaturizky">
 
-            <img
-                src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1400&q=85"
-                alt="Berbagai sayuran dan bahan pangan segar"
-                fetchpriority="high"
-            >
+<img
+                 src="https://images.unsplash.com/photo-QsYXYSwV3NU?auto=format&fit=crop&w=1400&q=85"
+                 alt="Keranjang belanja di toko kelontong"
+                 fetchpriority="high"
+             >
 
             <div class="sr-visual-content">
                 <span class="sr-visual-tag">

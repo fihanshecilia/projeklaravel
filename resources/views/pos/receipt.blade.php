@@ -4,8 +4,32 @@
 
 @section('content')
 <main class="receipt-page">
-    <section class="receipt-actions">
+    <style>
+        @media print {
+            .receipt-actions, .site-header, .site-footer {
+                display: none !important;
+            }
+            body, .receipt-page {
+                background: #fff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .thermal-receipt {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 80mm !important;
+                margin: 0 auto !important;
+                padding: 10px 0 !important;
+            }
+        }
+    </style>
+    <section class="receipt-actions" style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1rem;">
         <a class="login-back" href="{{ route('pos.index') }}">← Kembali ke kasir</a>
+        <button type="button" onclick="window.print()" class="login-back" style="cursor: pointer; background: #527d59; color: #ffffff; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Cetak Struk Thermal
+        </button>
     </section>
     <article class="thermal-receipt">
         <header><span class="receipt-mark">S</span><h1>TOKO SILATURIZKY</h1><p>Belanja dekat, hati tenang.</p></header>
@@ -42,3 +66,4 @@
         <footer><strong>Terima kasih telah berbelanja.</strong><span>Semoga harimu menyenangkan!</span></footer>
     </article>
 </main>
+@endsection
