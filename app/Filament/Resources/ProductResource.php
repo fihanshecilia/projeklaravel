@@ -163,6 +163,51 @@ class ProductResource extends Resource
                 ->label('Tampilkan di toko')
                 ->default(true)
                 ->required(),
+
+            Forms\Components\Section::make('Multi-Satuan (Pilihan Satuan Tambahan)')
+                ->description('Kelola satuan lain untuk produk ini (misal: Dus, Karton, Pack, Renteng) beserta faktor konversi ke satuan dasar.')
+                ->schema([
+                    Forms\Components\Repeater::make('units')
+                        ->relationship('units')
+                        ->schema([
+                            Forms\Components\TextInput::make('unit_name')
+                                ->label('Nama satuan')
+                                ->placeholder('Contoh: Dus, Pack, Renteng')
+                                ->required()
+                                ->maxLength(50),
+
+                            Forms\Components\TextInput::make('conversion_factor')
+                                ->label('Faktor konversi (isi)')
+                                ->helperText('Isi satuan dasar dalam 1 satuan ini (misal 1 Dus = 24 pcs, isi 24)')
+                                ->numeric()
+                                ->minValue(0.001)
+                                ->step(0.001)
+                                ->required(),
+
+                            Forms\Components\TextInput::make('selling_price')
+                                ->label('Harga jual')
+                                ->prefix('Rp')
+                                ->numeric()
+                                ->minValue(0)
+                                ->required(),
+
+                            Forms\Components\TextInput::make('purchase_price')
+                                ->label('Harga modal (opsional)')
+                                ->prefix('Rp')
+                                ->numeric()
+                                ->minValue(0)
+                                ->nullable(),
+
+                            Forms\Components\Toggle::make('is_active')
+                                ->label('Aktif')
+                                ->default(true),
+                        ])
+                        ->columns(5)
+                        ->defaultItems(0)
+                        ->addActionLabel('+ Tambah Satuan Produk'),
+                ])
+                ->columnSpanFull()
+                ->collapsible(),
         ])->columns(2);
     }
 
@@ -247,24 +292,7 @@ class ProductResource extends Resource
                 // Perbaikan: gunakan URL gambar yang sama dengan Kasir.
                 Tables\Columns\ImageColumn::make('image_path')
                     ->label('Foto')
-                    ->getStateUsing(
-                        fn (Product $record): ?string =>
-                            filled($record->image_path)
-                                ? (
-                                    \Illuminate\Support\Str::startsWith(
-                                        $record->image_path,
-                                        ['http://', 'https://']
-                                    )
-                                        ? $record->image_path
-                                        : asset(
-                                            'storage/' . ltrim(
-                                                $record->image_path,
-                                                '/'
-                                            )
-                                        )
-                                )
-                                : null
-                    )
+                    ->disk('public')
                     ->width(60)
                     ->height(60)
                     ->square(),
@@ -392,65 +420,12 @@ class ProductResource extends Resource
                         Product $record,
                         array $data
                     ): void {
-                        DB::transaction(function () use (
+                        app(\App\Services\InventoryService::class)->restock(
                             $record,
-                            $data
-                        ): void {
-                            $product = Product::query()
-                                ->lockForUpdate()
-                                ->findOrFail($record->id);
-
-                            $before = (float) $product->stock;
-                            $quantity = (float) $data['quantity'];
-
-                            if (
-                                in_array(
-                                    strtolower((string) $product->unit),
-                                    ['pcs', 'tabung'],
-                                    true
-                                )
-                                && floor($quantity) !== $quantity
-                            ) {
-                                throw ValidationException::withMessages([
-                                    'quantity' =>
-                                        "Jumlah restok {$product->name} harus berupa bilangan bulat.",
-                                ]);
-                            }
-
-                            $after = $before + $quantity;
-
-                            $product->update([
-                                'stock' => $after,
-                            ]);
-
-                            if (
-                                DB::connection()->getDriverName() === 'mysql'
-                            ) {
-                                StockLog::query()
-                                    ->where('product_id', $product->id)
-                                    ->where('type', 'incoming')
-                                    ->where('stock_before', $before)
-                                    ->where('stock_after', $after)
-                                    ->latest('id')
-                                    ->limit(1)
-                                    ->update([
-                                        'user_id' => auth()->id(),
-                                        'note' => $data['note'],
-                                    ]);
-                            } else {
-                                StockLog::create([
-                                    'product_id' => $product->id,
-                                    'user_id' => auth()->id(),
-                                    'type' => 'incoming',
-                                    'quantity_change' => $quantity,
-                                    'stock_before' => $before,
-                                    'stock_after' => $after,
-                                    'reference' =>
-                                        'restock:' . $product->id . ':' . Str::uuid(),
-                                    'note' => $data['note'],
-                                ]);
-                            }
-                        });
+                            (float) $data['quantity'],
+                            $data['note'],
+                            auth()->user()
+                        );
 
                         Notification::make()
                             ->title('Stok berhasil diperbarui')

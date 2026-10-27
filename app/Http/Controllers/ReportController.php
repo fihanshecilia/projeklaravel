@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\StockLog;
-use App\Models\Transaction;
-use App\Models\TransactionDetail;
+use App\Services\ReportService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        protected ReportService $reportService
+    ) {}
+
     public function index(Request $request): View
     {
         $start = $request->input(
@@ -41,75 +42,20 @@ class ReportController extends Controller
             )
         );
 
-        if ($end < $start) {
-            [$start, $end] = [$end, $start];
-        }
+        $report = $this->reportService->getSummary((string) $start, (string) $end);
 
-        $transactions = Transaction::query()
-            ->where('status', 'completed')
-            ->whereDate('completed_at', '>=', $start)
-            ->whereDate('completed_at', '<=', $end);
-
-        $profitExpression = DB::connection()->getDriverName() === 'mysql'
-            ? 'hitung_laba(unit_price, purchase_price) * quantity'
-            : '(unit_price - purchase_price) * quantity';
-
-        $dailyProfit = TransactionDetail::query()
-            ->whereHas('transaction', function ($query) use ($start, $end): void {
-                $query->where('status', 'completed')
-                    ->whereDate('completed_at', '>=', $start)
-                    ->whereDate('completed_at', '<=', $end);
-            })
-            ->sum(DB::raw($profitExpression));
-
-        $bestSeller = TransactionDetail::query()
-            ->whereHas('transaction', function ($query) use ($start, $end): void {
-                $query->where('status', 'completed')
-                    ->whereDate('completed_at', '>=', $start)
-                    ->whereDate('completed_at', '<=', $end);
-            })
-            ->selectRaw(
-                'product_id, product_name, unit, SUM(quantity) as sold_quantity'
-            )
-            ->groupBy('product_id', 'product_name', 'unit')
-            ->orderByDesc('sold_quantity')
-            ->first();
-
-        $lowStockProducts = Product::query()
-            ->with('category:id,name')
-            ->where('is_active', true)
-            ->where(function ($query): void {
-                $query->where('stock', '<=', 0)
-                    ->orWhereColumn('stock', '<=', 'min_stock');
-            })
-            ->orderBy('stock')
-            ->get();
-
-        $dailyTotal = (clone $transactions)->sum('total');
-        $dailyCount = (clone $transactions)->count();
-
-        $paymentMethods = (clone $transactions)
-            ->selectRaw('payment_method, COUNT(*) as transaction_count, SUM(total) as total_amount')
-            ->groupBy('payment_method')
-            ->orderBy('payment_method')
-            ->get();
-
-        $date = $start;
-
-        $payment_methods = $paymentMethods;
-
-        return view('admin.reports', compact(
-            'start',
-            'end',
-            'date',
-            'dailyProfit',
-            'dailyTotal',
-            'dailyCount',
-            'bestSeller',
-            'lowStockProducts',
-            'paymentMethods',
-            'payment_methods'
-        ));
+        return view('admin.reports', [
+            'start' => $report['startDate'],
+            'end' => $report['endDate'],
+            'date' => $report['startDate'],
+            'dailyProfit' => $report['dailyProfit'],
+            'dailyTotal' => $report['dailyTotal'],
+            'dailyCount' => $report['dailyCount'],
+            'bestSeller' => $report['bestSeller'],
+            'lowStockProducts' => $report['lowStockProducts'],
+            'paymentMethods' => $report['paymentMethods'],
+            'payment_methods' => $report['paymentMethods'],
+        ]);
     }
 
     public function stock(): View
@@ -119,18 +65,10 @@ class ReportController extends Controller
                 'product:id,name,unit',
                 'user:id,name',
             ])
-            ->latest()
+            ->latest('id')
             ->paginate(30);
 
-        $lowStockProducts = Product::query()
-            ->with('category:id,name')
-            ->where('is_active', true)
-            ->where(function ($query): void {
-                $query->where('stock', '<=', 0)
-                    ->orWhereColumn('stock', '<=', 'min_stock');
-            })
-            ->orderBy('stock')
-            ->get();
+        $lowStockProducts = $this->reportService->getLowStockProducts();
 
         return view('admin.stock', compact(
             'stockLogs',

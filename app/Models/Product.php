@@ -32,6 +32,16 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function units(): HasMany
+    {
+        return $this->hasMany(ProductUnit::class);
+    }
+
+    public function activeUnits(): HasMany
+    {
+        return $this->hasMany(ProductUnit::class)->where('is_active', true);
+    }
+
     public function transactionDetails(): HasMany
     {
         return $this->hasMany(TransactionDetail::class);

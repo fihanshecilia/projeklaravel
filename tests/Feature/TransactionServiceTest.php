@@ -4,8 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\Supplier;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\InventoryService;
+use App\Services\PurchaseService;
+use App\Services\ReportService;
 use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,16 +69,6 @@ class TransactionServiceTest extends TestCase
         $this->assertSame('1.000', $product->fresh()->stock);
     }
 
-    public function test_only_admin_roles_can_access_the_admin_panel(): void
-    {
-        $this->markTestSkipped('Fitur admin panel diuji melalui RoutesIntegrityTest.');
-    }
-
-    public function test_admin_dashboard_and_product_table_render_for_admin(): void
-    {
-        $this->markTestSkipped('Fitur dashboard admin diuji melalui RoutesIntegrityTest.');
-    }
-
     public function test_cashier_can_complete_a_pos_sale_and_open_the_receipt(): void
     {
         [$product, $cashier] = $this->makeProductAndUser();
@@ -107,27 +102,127 @@ class TransactionServiceTest extends TestCase
 
     public function test_cashier_can_sign_in_with_email_and_password(): void
     {
-        $this->markTestSkipped('Fitur login diuji melalui RoutesIntegrityTest.');
+        $cashier = User::factory()->create([
+            'email' => 'kasir@toko.local',
+            'role' => 'kasir',
+            'password' => 'kasirpassword123',
+        ]);
+
+        $response = $this->post('/masuk', [
+            'email' => 'kasir@toko.local',
+            'password' => 'kasirpassword123',
+        ]);
+
+        $response->assertRedirect(route('pos.index'));
+        $this->assertAuthenticatedAs($cashier);
     }
 
     public function test_store_admin_can_sign_in_with_email_and_password(): void
     {
-        $this->markTestSkipped('Fitur login diuji melalui RoutesIntegrityTest.');
+        $admin = User::factory()->create([
+            'email' => 'admin@toko.local',
+            'role' => 'admin_toko',
+            'password' => 'adminpassword123',
+        ]);
+
+        $response = $this->post('/masuk', [
+            'email' => 'admin@toko.local',
+            'password' => 'adminpassword123',
+        ]);
+
+        $response->assertRedirect('/admin');
+        $this->assertAuthenticatedAs($admin);
     }
 
     public function test_employee_login_is_available_only_at_the_internal_login_route(): void
     {
-        $this->markTestSkipped('Fitur login diuji melalui RoutesIntegrityTest.');
+        $this->get('/login')->assertOk();
+        $this->get('/masuk')->assertOk();
+        $this->get('/')->assertRedirect(route('employee.login'));
     }
 
-    public function test_cancelling_an_active_order_restores_stock(): void
+    public function test_sale_with_multi_unit_converts_stock_accurately(): void
     {
-        $this->markTestSkipped('Fitur pesanan online dinonaktifkan.');
+        [$product, $cashier] = $this->makeProductAndUser();
+        $product->update(['unit' => 'pcs', 'stock' => 100]);
+
+        $unitDus = ProductUnit::create([
+            'product_id' => $product->id,
+            'unit_name' => 'Dus',
+            'conversion_factor' => 24,
+            'selling_price' => 250000,
+        ]);
+
+        $order = app(TransactionService::class)->create([
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'product_unit_id' => $unitDus->id,
+                    'quantity' => 2, // 2 Dus = 48 pcs
+                ],
+            ],
+            'amount_paid' => 500000,
+            'payment_method' => 'cash',
+        ], $cashier);
+
+        $this->assertSame('52.000', $product->fresh()->stock); // 100 - 48 = 52
+        $this->assertDatabaseHas('transaction_details', [
+            'transaction_id' => $order->id,
+            'product_unit_id' => $unitDus->id,
+            'unit' => 'Dus',
+            'quantity' => '2.000',
+            'conversion_factor' => '24.000',
+            'base_quantity' => '48.000',
+            'unit_price' => '250000.00',
+            'subtotal' => '500000.00',
+        ]);
     }
 
-    public function test_customer_can_view_order_history_and_reorder_products(): void
+    public function test_inventory_service_restock_and_adjust_stock(): void
     {
-        $this->markTestSkipped('Fitur riwayat pesanan customer online dinonaktifkan.');
+        [$product, $cashier] = $this->makeProductAndUser();
+
+        app(InventoryService::class)->restock($product, 15, 'Kiriman distributor', $cashier);
+        $this->assertSame('25.000', $product->fresh()->stock);
+
+        app(InventoryService::class)->adjustStock($product, 20, 'Opname fisik', $cashier);
+        $this->assertSame('20.000', $product->fresh()->stock);
+    }
+
+    public function test_purchase_service_create_and_receive_restock(): void
+    {
+        [$product, $admin] = $this->makeProductAndUser();
+        $supplier = Supplier::create(['name' => 'PT Sumber Pangan']);
+
+        $purchase = app(PurchaseService::class)->createPurchase([
+            'supplier_id' => $supplier->id,
+            'purchase_date' => today(),
+            'items' => [
+                ['product_id' => $product->id, 'quantity' => 50, 'purchase_price' => 9500],
+            ],
+        ], $admin);
+
+        $this->assertSame('ordered', $purchase->status);
+        $this->assertSame('10.000', $product->fresh()->stock);
+
+        app(PurchaseService::class)->receivePurchase($purchase, $admin);
+        $this->assertSame('received', $purchase->fresh()->status);
+        $this->assertSame('60.000', $product->fresh()->stock);
+    }
+
+    public function test_report_service_calculates_daily_summary_accurately(): void
+    {
+        [$product, $cashier] = $this->makeProductAndUser();
+        app(TransactionService::class)->create([
+            'items' => [['product_id' => $product->id, 'quantity' => 2]],
+            'amount_paid' => 24000,
+            'payment_method' => 'cash',
+        ], $cashier);
+
+        $summary = app(ReportService::class)->getTodaySummary();
+        $this->assertEquals(24000, $summary['dailyTotal']);
+        $this->assertEquals(1, $summary['dailyCount']);
+        $this->assertEquals(4000, $summary['dailyProfit']);
     }
 
     public function test_archiving_a_product_preserves_its_transaction_and_stock_history(): void

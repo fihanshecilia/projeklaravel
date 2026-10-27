@@ -698,21 +698,34 @@ if (pos) {
         }).join('');
     };
 
+    const getCartItem = (id) => {
+        const item = cart[id];
+        if (!item) return null;
+        if (typeof item === 'number') {
+            return { quantity: item, unitId: null };
+        }
+        return item;
+    };
+
     const renderCart = () => {
-        const entries = Object.entries(cart).filter(
-            ([, quantity]) => quantity > 0
-        );
+        const entries = Object.keys(cart)
+            .map((id) => [id, getCartItem(id)])
+            .filter(([, item]) => item && item.quantity > 0);
 
         const count = entries.reduce(
-            (sum, [, quantity]) => sum + quantity,
+            (sum, [, item]) => sum + item.quantity,
             0
         );
 
-        const total = entries.reduce(
-            (sum, [id, quantity]) =>
-                sum + productById.get(id).price * quantity,
-            0
-        );
+        const total = entries.reduce((sum, [id, item]) => {
+            const product = productById.get(id);
+            if (!product) return sum;
+            const unitObj = item.unitId && product.units
+                ? product.units.find((u) => String(u.id) === String(item.unitId))
+                : null;
+            const price = unitObj ? unitObj.price : product.price;
+            return sum + price * item.quantity;
+        }, 0);
 
         if (paymentMethod.value === 'qris') {
             paidInput.value = total;
@@ -749,29 +762,59 @@ if (pos) {
         submitButton.disabled = !validPayment;
 
         itemFields.innerHTML = entries.map(
-            ([id, quantity], index) => `
+            ([id, item], index) => `
                 <input type="hidden"
                     name="items[${index}][product_id]"
                     value="${escapeHtml(id)}">
 
                 <input type="hidden"
+                    name="items[${index}][product_unit_id]"
+                    value="${item.unitId ? escapeHtml(item.unitId) : ''}">
+
+                <input type="hidden"
                     name="items[${index}][quantity]"
-                    value="${quantity}">
+                    value="${item.quantity}">
             `
         ).join('');
 
         lines.innerHTML = entries.length
-            ? entries.map(([id, quantity]) => {
+            ? entries.map(([id, item]) => {
                 const product = productById.get(id);
+                const hasUnits = product.units && product.units.length > 0;
+                const unitObj = item.unitId && hasUnits
+                    ? product.units.find((u) => String(u.id) === String(item.unitId))
+                    : null;
+                const activePrice = unitObj ? unitObj.price : product.price;
+                const activeUnitName = unitObj ? unitObj.unit_name : product.unit;
+                const factor = unitObj ? unitObj.conversion_factor : 1;
+                const maxUnitQty = factor > 1
+                    ? Math.floor(product.stock / factor)
+                    : Number(product.stock);
 
                 return `
                     <div class="pos-line">
                         <div>
                             <strong>${escapeHtml(product.name)}</strong>
                             <small>
-                                ${money.format(product.price)}
-                                / ${escapeHtml(product.unit)}
+                                ${money.format(activePrice)}
+                                / ${escapeHtml(activeUnitName)}
                             </small>
+                            ${hasUnits ? `
+                                <div style="margin-top: 4px;">
+                                    <select data-pos-unit-select="${escapeHtml(id)}"
+                                        aria-label="Pilih satuan ${escapeHtml(product.name)}"
+                                        style="font-size: 11px; padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #1e293b; cursor: pointer;">
+                                        <option value="" ${!item.unitId ? 'selected' : ''}>
+                                            ${escapeHtml(product.unit)} (${money.format(product.price)})
+                                        </option>
+                                        ${product.units.map((u) => `
+                                            <option value="${escapeHtml(u.id)}" ${String(item.unitId) === String(u.id) ? 'selected' : ''}>
+                                                ${escapeHtml(u.unit_name)} (${money.format(u.price)}) [isi ${u.conversion_factor} ${escapeHtml(product.unit)}]
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                            ` : ''}
                         </div>
 
                         <div class="pos-line-quantity">
@@ -783,21 +826,21 @@ if (pos) {
                             <input type="number"
                                 data-pos-quantity-input="${escapeHtml(id)}"
                                 aria-label="Jumlah ${escapeHtml(product.name)}"
-                                min="${quantityStep(product)}"
-                                step="${quantityStep(product)}"
-                                max="${Number(product.stock)}"
-                                value="${Number(quantity)}">
+                                min="${unitObj ? '1' : quantityStep(product)}"
+                                step="${unitObj ? '1' : quantityStep(product)}"
+                                max="${maxUnitQty}"
+                                value="${Number(item.quantity)}">
 
                             <button type="button"
                                 data-pos-quantity="${escapeHtml(id)}"
                                 data-pos-delta="1"
                                 aria-label="Tambah"
-                                ${quantity >= product.stock ? 'disabled' : ''}>
+                                ${item.quantity >= maxUnitQty ? 'disabled' : ''}>
                                 +
                             </button>
                         </div>
 
-                        <b>${money.format(product.price * quantity)}</b>
+                        <b>${money.format(activePrice * item.quantity)}</b>
                     </div>
                 `;
             }).join('')
@@ -817,13 +860,22 @@ if (pos) {
         const id = String(button.dataset.posAdd);
         const product = productById.get(id);
 
-        if (
-            product
-            && Number(cart[id] || 0) < product.stock
-        ) {
-            cart[id] = Number(cart[id] || 0) > 0
-                ? Number(cart[id]) + 1
-                : initialQuantity(product);
+        if (product && product.stock > 0) {
+            const current = getCartItem(id);
+            if (current) {
+                const unitObj = current.unitId && product.units
+                    ? product.units.find((u) => String(u.id) === String(current.unitId))
+                    : null;
+                const factor = unitObj ? unitObj.conversion_factor : 1;
+                const maxQty = factor > 1 ? Math.floor(product.stock / factor) : product.stock;
+
+                if (current.quantity < maxQty) {
+                    current.quantity += 1;
+                    cart[id] = current;
+                }
+            } else {
+                cart[id] = { quantity: initialQuantity(product), unitId: null };
+            }
         }
 
         renderCart();
@@ -835,54 +887,112 @@ if (pos) {
 
         const id = String(button.dataset.posQuantity);
         const product = productById.get(id);
+        const current = getCartItem(id);
+        if (!current || !product) return;
 
-        const quantity =
-            Number(cart[id] || 0)
-            + Number(button.dataset.posDelta);
+        const delta = Number(button.dataset.posDelta);
+        const unitObj = current.unitId && product.units
+            ? product.units.find((u) => String(u.id) === String(current.unitId))
+            : null;
+        const factor = unitObj ? unitObj.conversion_factor : 1;
+        const maxQty = factor > 1 ? Math.floor(product.stock / factor) : product.stock;
 
-        if (quantity <= 0) {
+        const newQty = current.quantity + delta;
+
+        if (newQty <= 0) {
             delete cart[id];
-        } else if (product && quantity <= product.stock) {
-            cart[id] = quantity;
+        } else if (newQty <= maxQty) {
+            current.quantity = newQty;
+            cart[id] = current;
         }
 
         renderCart();
     });
 
     lines.addEventListener('change', (event) => {
+        const unitSelect = event.target.closest('[data-pos-unit-select]');
+        if (unitSelect) {
+            const id = String(unitSelect.dataset.posUnitSelect);
+            const current = getCartItem(id);
+            if (current) {
+                current.unitId = unitSelect.value ? unitSelect.value : null;
+                current.quantity = 1;
+                cart[id] = current;
+                renderCart();
+            }
+            return;
+        }
+
         const input = event.target.closest('[data-pos-quantity-input]');
         if (!input) return;
 
         const id = String(input.dataset.posQuantityInput);
         const product = productById.get(id);
+        const current = getCartItem(id);
         const quantity = Number(input.value);
 
-        if (
-            !product
-            || !Number.isFinite(quantity)
-            || quantity <= 0
-            || quantity > Number(product.stock)
-            || (
-                quantityStep(product) === '1'
-                && !Number.isInteger(quantity)
-            )
-        ) {
+        if (!product || !current || !Number.isFinite(quantity) || quantity <= 0) {
             renderCart();
             return;
         }
 
-        cart[id] = quantity;
+        const unitObj = current.unitId && product.units
+            ? product.units.find((u) => String(u.id) === String(current.unitId))
+            : null;
+        const factor = unitObj ? unitObj.conversion_factor : 1;
+        const maxQty = factor > 1 ? Math.floor(product.stock / factor) : product.stock;
+
+        if (quantity > maxQty) {
+            renderCart();
+            return;
+        }
+
+        current.quantity = quantity;
+        cart[id] = current;
         renderCart();
     });
 
-    pos.querySelector('[data-pos-search]')
-        .addEventListener('input', (event) => {
+    const searchInput = pos.querySelector('[data-pos-search]');
+    if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
             search = event.target.value
                 .trim()
                 .toLocaleLowerCase('id-ID');
 
             renderGrid();
         });
+
+        // Dukungan Barcode Scanner: Tekan Enter untuk langsung memasukkan barang ke keranjang
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const term = searchInput.value.trim().toLocaleLowerCase('id-ID');
+                if (!term) return;
+
+                const matched = products.find((p) =>
+                    p.sku.toLocaleLowerCase('id-ID') === term
+                    || p.name.toLocaleLowerCase('id-ID') === term
+                ) || products.find((p) =>
+                    p.sku.toLocaleLowerCase('id-ID').includes(term)
+                    || p.name.toLocaleLowerCase('id-ID').includes(term)
+                );
+
+                if (matched && Number(matched.stock) > 0) {
+                    const current = getCartItem(matched.id);
+                    if (current) {
+                        current.quantity += 1;
+                        cart[matched.id] = current;
+                    } else {
+                        cart[matched.id] = { quantity: initialQuantity(matched), unitId: null };
+                    }
+                    searchInput.value = '';
+                    search = '';
+                    renderGrid();
+                    renderCart();
+                }
+            }
+        });
+    }
 
     pos.querySelector('[data-pos-categories]')
         .addEventListener('click', (event) => {
@@ -921,11 +1031,17 @@ if (pos) {
                     qrisVerified.checked = false;
                 }
 
-                const total = Object.entries(cart).reduce(
-                    (sum, [id, quantity]) =>
-                        sum + productById.get(id).price * quantity,
-                    0
-                );
+                const total = Object.keys(cart).reduce((sum, id) => {
+                    const item = getCartItem(id);
+                    if (!item || item.quantity <= 0) return sum;
+                    const product = productById.get(id);
+                    if (!product) return sum;
+                    const unitObj = item.unitId && product.units
+                        ? product.units.find((u) => String(u.id) === String(item.unitId))
+                        : null;
+                    const price = unitObj ? unitObj.price : product.price;
+                    return sum + price * item.quantity;
+                }, 0);
 
                 paidInput.value = total;
             } else {
@@ -938,11 +1054,17 @@ if (pos) {
 
     pos.querySelectorAll('[data-cash-value]').forEach((button) => {
         button.addEventListener('click', () => {
-            const currentTotal = Object.entries(cart).reduce(
-                (sum, [id, quantity]) =>
-                    sum + productById.get(id).price * quantity,
-                0
-            );
+            const currentTotal = Object.keys(cart).reduce((sum, id) => {
+                const item = getCartItem(id);
+                if (!item || item.quantity <= 0) return sum;
+                const product = productById.get(id);
+                if (!product) return sum;
+                const unitObj = item.unitId && product.units
+                    ? product.units.find((u) => String(u.id) === String(item.unitId))
+                    : null;
+                const price = unitObj ? unitObj.price : product.price;
+                return sum + price * item.quantity;
+            }, 0);
 
             paidInput.value =
                 button.dataset.cashValue === 'exact'

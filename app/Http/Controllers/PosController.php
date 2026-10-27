@@ -16,7 +16,7 @@ class PosController extends Controller
     public function index(): View
     {
         $products = Product::query()
-            ->with('category:id,name')
+            ->with(['category:id,name', 'activeUnits'])
             ->where('is_active', true)
             ->whereHas('category', function ($query) {
                 $query->where('is_active', true);
@@ -33,8 +33,14 @@ class PosController extends Controller
                 'stock' => (float) $product->stock,
                 'min_stock' => (float) $product->min_stock,
                 'image' => $product->image_path
-                    ? asset('storage/'.$product->image_path)
+                    ? url('storage/'.$product->image_path)
                     : null,
+                'units' => $product->activeUnits->map(fn ($u): array => [
+                    'id' => $u->id,
+                    'unit_name' => $u->unit_name,
+                    'conversion_factor' => (float) $u->conversion_factor,
+                    'price' => (float) $u->selling_price,
+                ])->values()->all(),
             ]);
 
         $categories = Category::query()

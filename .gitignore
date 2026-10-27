@@ -29,6 +29,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+database/*.sql
+!database/sql/toko_silaturizky.sql
 /bootstrap/cache/*.php
 /storage/logs/*
 !/storage/logs/.gitignore

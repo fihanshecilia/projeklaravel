@@ -616,8 +616,8 @@
                aria-label="Informasi Toko Silaturizky">
 
 <img
-                 src="https://images.unsplash.com/photo-QsYXYSwV3NU?auto=format&fit=crop&w=1400&q=85"
-                 alt="Keranjang belanja di toko kelontong"
+                 src="{{ url('images/login-hero.png') }}"
+                 alt="Rak sembako berwarna-warni di supermarket"
                  fetchpriority="high"
              >
 

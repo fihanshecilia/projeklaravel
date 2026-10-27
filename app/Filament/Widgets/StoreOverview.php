@@ -2,13 +2,9 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Product;
-use App\Models\Transaction;
-use App\Models\TransactionDetail;
+use App\Services\ReportService;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class StoreOverview extends BaseWidget
 {
@@ -18,43 +14,14 @@ class StoreOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $today = Transaction::query()
-            ->where('status', 'completed')
-            ->whereDate('completed_at', today());
+        $reportService = app(ReportService::class);
+        $summary = $reportService->getTodaySummary();
 
-        $completedDetails = fn () => TransactionDetail::query()
-            ->whereHas(
-                'transaction',
-                fn (Builder $query): Builder => $query
-                    ->where('status', 'completed')
-                    ->whereDate('completed_at', today())
-            );
-
-        $bestSeller = $completedDetails()
-            ->selectRaw(
-                'product_id, product_name, unit, SUM(quantity) as sold_quantity'
-            )
-            ->groupBy('product_id', 'product_name', 'unit')
-            ->orderByDesc('sold_quantity')
-            ->value('product_name');
-
-        $dailySales = (clone $today)->sum('total');
-        $dailyCount = (clone $today)->count();
-
-        $profitExpression = DB::connection()->getDriverName() === 'mysql'
-            ? 'hitung_laba(unit_price, purchase_price) * quantity'
-            : '(unit_price - purchase_price) * quantity';
-
-        $dailyProfit = $completedDetails()
-            ->sum(DB::raw($profitExpression));
-
-        $lowStockCount = Product::query()
-            ->where('is_active', true)
-            ->where(function (Builder $query): void {
-                $query->where('stock', '<=', 0)
-                    ->orWhereColumn('stock', '<=', 'min_stock');
-            })
-            ->count();
+        $dailySales = $summary['dailyTotal'];
+        $dailyCount = $summary['dailyCount'];
+        $dailyProfit = $summary['dailyProfit'];
+        $bestSeller = $summary['bestSeller']?->product_name;
+        $lowStockCount = $reportService->getLowStockCount();
 
         return [
             Stat::make(
