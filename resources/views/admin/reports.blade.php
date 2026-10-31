@@ -61,7 +61,7 @@
         <article class="report-stat">
             <span>Transaksi selesai</span>
             <strong>{{ number_format($dailyCount, 0, ',', '.') }}</strong>
-            <small>Kasir dan pesanan online</small>
+            <small>transaksi</small>
         </article>
 
         <article class="report-stat">
